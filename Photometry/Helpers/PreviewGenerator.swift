@@ -1,19 +1,31 @@
 import SceneKit
+import UniformTypeIdentifiers
 
 @MainActor
 class PreviewGenerator {
+    enum PreviewGeneratorError: Error {
+        case unsupportedFileExtension
+    }
     
-    private let modelsFolder: URL = .documentsDirectory.appendingPathComponent("Models/")
+    static var supportedFileExtensions: [UTType] {
+        [.usdz]
+    }
     
     /// Возвращает превью для .usdz файла
-    static func getPreviewImage(from url: URL) async -> UIImage? {
+    static func getPreviewImage(from url: URL) async throws -> UIImage? {
+        guard let type = UTType(url.pathExtension),
+            supportedFileExtensions.contains(where: { $0 == type })
+        else {
+            throw PreviewGeneratorError.unsupportedFileExtension
+        }
+        
         let imagePath = url
             .deletingPathExtension()
             .appendingPathExtension("png")
             .path()
         
         guard FileManager.default.fileExists(atPath: imagePath) else {
-            let image = await generatePreviewImage(from: url)
+            let image = try await generatePreviewImage(from: url)
             
             FileManager.default.createFile(atPath: imagePath, contents: image?.pngData())
             
@@ -27,7 +39,13 @@ class PreviewGenerator {
     }
     
     /// Создает превью для .usdz файла
-    static func generatePreviewImage(from url: URL) async ->  UIImage? {
+    static func generatePreviewImage(from url: URL) async throws ->  UIImage? {
+        guard let type = UTType(url.pathExtension),
+            supportedFileExtensions.contains(where: { $0 == type })
+        else {
+            throw PreviewGeneratorError.unsupportedFileExtension
+        }
+        
         guard let scene = try? SCNScene(url: url) else {
             return nil
         }

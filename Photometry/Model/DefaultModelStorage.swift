@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 import UniformTypeIdentifiers
 
 extension ModelStorage where Self == DefaultModelStorage {
@@ -7,7 +7,7 @@ extension ModelStorage where Self == DefaultModelStorage {
     }
 }
 
-@Observable                                                                 // TODO: Протоколу не нужно @Observable ???
+@Observable
 final class DefaultModelStorage: ModelStorage {
     enum StorageError: Error {
         case folderCreationError
@@ -21,7 +21,7 @@ final class DefaultModelStorage: ModelStorage {
     private let modelsFolder: URL = .documentsDirectory.appendingPathComponent("Models/")
     
     init() {
-        do {                                                                // TODO: Ошибки обработать бы
+        do {
             try createFolderIfNeeded(at: modelsFolder)
             try load()
         } catch {
@@ -34,7 +34,7 @@ final class DefaultModelStorage: ModelStorage {
             throw StorageError.noAccess
         }
         guard
-            let type = UTType(filenameExtension: url.pathExtension),        // TODO: && url.isFileURL ???
+            let type = UTType(filenameExtension: url.pathExtension),
             supportedFileExtensions.contains(type)
         else {
             throw StorageError.unsupportedFileExtension
@@ -42,7 +42,6 @@ final class DefaultModelStorage: ModelStorage {
         
         let newModelURL = modelsFolder
             .appendingPathComponent(url.lastPathComponent)
-//            .appendingPathExtension(url.pathExtension)
         
         try fileManager.copyItem(at: url, to: newModelURL)
         

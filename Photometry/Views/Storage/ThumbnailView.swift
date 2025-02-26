@@ -16,7 +16,7 @@ struct ThumbnailView: View {
             if let image {
                 thumbnailImage(uiimage: image)
             } else {
-                ProgressView()
+                ProgressView()                                      // TODO: Шиммер
             }
             title(url.deletingPathExtension().lastPathComponent)
         }
@@ -25,7 +25,11 @@ struct ThumbnailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: 16))
         .task {
-            image = await PreviewGenerator.getPreviewImage(from: url)
+            do {
+                image = try await PreviewGenerator.getPreviewImage(from: url)
+            } catch {
+                print(error.localizedDescription)
+            }
         }
     }
     
